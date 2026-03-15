@@ -1,0 +1,20 @@
+{
+  "name": "apka-travel-routes-2026",
+  "version": "1.0.0",
+  "description": "Travel Routes Planning Platform - Final Project 2026",
+  "scripts": {
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "concurrently \"cd server && npm start\" \"cd client && npm start\"",
+    "deploy": "npm run build && echo 'Ready for deployment'"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": ["travel", "routes", "nextjs", "express", "jwt", "maps"],
+  "author": "Your Name",
+  "license": "MIT"
+}
