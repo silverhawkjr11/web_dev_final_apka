@@ -41,6 +41,49 @@ const geocodeCity = async (city: string, country: string): Promise<[number, numb
   }
 };
 
+// Find a real nearby town/city using Nominatim within a sensible radius
+const findNearbyCity = async (
+  lat: number,
+  lng: number,
+  tripType: string,
+  dayIndex: number
+): Promise<{ lat: number; lng: number; name: string } | null> => {
+  const targetDeg = tripType === 'cycling' ? 0.4 : 0.08;
+  const delta = targetDeg * 2;
+  const viewbox = `${lng - delta},${lat + delta},${lng + delta},${lat - delta}`;
+
+  const trySearch = async (q: string) => {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${q}&viewbox=${viewbox}&bounded=1&limit=20`,
+      { headers: { 'Accept-Language': 'en' } }
+    );
+    return res.ok ? res.json() : [];
+  };
+
+  try {
+    let places = await trySearch('town');
+    if (!places.length) places = await trySearch('city');
+    if (!places.length) return null;
+
+    const suitable = places.filter((p: any) => {
+      const d = Math.sqrt(
+        Math.pow(parseFloat(p.lat) - lat, 2) + Math.pow(parseFloat(p.lon) - lng, 2)
+      );
+      return d > targetDeg * 0.15;
+    });
+
+    const list = suitable.length ? suitable : places;
+    const pick = list[dayIndex % list.length];
+    return {
+      lat: parseFloat(pick.lat),
+      lng: parseFloat(pick.lon),
+      name: pick.display_name.split(',')[0].trim()
+    };
+  } catch {
+    return null;
+  }
+};
+
 interface WeatherData {
   location: string;
   forecast: Array<{
@@ -320,22 +363,12 @@ export default function PlanningPage() {
           let routeCoordinates = null;
           
           if (data.routes && data.routes[0] && data.routes[0].geometry) {
-            // OSRM returns encoded polyline - decode it
-            const encodedPolyline = data.routes[0].geometry;
-            console.log('🔓 Decoding OSRM polyline:', encodedPolyline.substring(0, 100) + '...');
-            
-            try {
-              const decodedCoords = decodePolyline(encodedPolyline);
-              console.log(`🗺️ Decoded ${decodedCoords.length} coordinate points from OSRM polyline!`);
-              console.log('🗺️ First decoded coord:', decodedCoords[0]);
-              console.log('🗺️ Last decoded coord:', decodedCoords[decodedCoords.length - 1]);
-              
-              // OSRM polyline is [lat, lng] format - perfect for our map
-              routeCoordinates = decodedCoords;
-              
-            } catch (decodeError) {
-              console.log('❌ Polyline decoding failed:', decodeError);
-            }
+            // OSRM geojson geometry: coordinates are [lng, lat] — flip to [lat, lng] for Leaflet
+            const geojsonCoords: number[][] = data.routes[0].geometry.coordinates;
+            console.log(`🗺️ Got ${geojsonCoords.length} coordinate points from OSRM GeoJSON`);
+            routeCoordinates = geojsonCoords.map((c: number[]) => [c[1], c[0]]);
+            console.log('🗺️ First coord:', routeCoordinates[0]);
+            console.log('🗺️ Last coord:', routeCoordinates[routeCoordinates.length - 1]);
           }
           
           if (routeCoordinates && Array.isArray(routeCoordinates) && routeCoordinates.length > 0) {
@@ -530,14 +563,12 @@ Make it realistic with actual cities in ${country}.`;
             { lat: startCoords[0], lng: startCoords[1], name: `${city} Center` } :
             dailySegments[day - 1].endPoint;
           
-          // Generate realistic endpoint coordinates
-          const angle = (day / duration) * 2 * Math.PI;
-          const radius = tripType === 'cycling' ? 0.5 : 0.05;
-          const endPoint = {
-            lat: startCoords[0] + Math.cos(angle) * radius,
-            lng: startCoords[1] + Math.sin(angle) * radius,
-            name: cityName
-          };
+          // Geocode the AI-suggested city name for a real endpoint
+          const cityCoords = await geocodeCity(cityName, country);
+          const endPoint = cityCoords
+            ? { lat: cityCoords[0], lng: cityCoords[1], name: cityName }
+            : (await findNearbyCity(startCoords[0], startCoords[1], tripType, day)) ||
+              { lat: startCoords[0] + 0.3, lng: startCoords[1], name: cityName };
           
           // Get real road route using OpenRouteService API
           const aiDayCoordinates = await getRealRouteCoordinates(
@@ -631,27 +662,25 @@ Make it realistic with actual cities in ${country}.`;
       
       console.log(`🗓️ Day ${day + 1} start point:`, startPoint);
 
-      let endPoint;
-      if (isCycling) {
-        // For cycling: create city-to-city route by moving in a direction
-        const direction = (day / (duration - 1)) * Math.PI; // Spread across 180 degrees
-        const distance = 0.5 + (day * 0.3); // Increasing distance each day
-        endPoint = {
-          lat: startCoords[0] + Math.cos(direction) * distance,
-          lng: startCoords[1] + Math.sin(direction) * distance,
-          name: `${city} Destination ${day + 1}`
-        };
-        console.log(`🚴‍♂️ Day ${day + 1} cycling to:`, endPoint);
+      // For trekking last day: return to start
+      const isLastTrekkingDay = !isCycling && day === duration - 1;
+      let endPoint: { lat: number; lng: number; name: string };
+
+      if (isLastTrekkingDay) {
+        endPoint = { lat: startCoords[0], lng: startCoords[1], name: `${city} Center` };
       } else {
-        const angle = (day / duration) * 2 * Math.PI;
-        const radius = 0.05;
-        endPoint = day === duration - 1 ? 
-          { lat: startCoords[0], lng: startCoords[1], name: `${city} Center` } :
-          { 
-            lat: startCoords[0] + Math.cos(angle) * radius, 
-            lng: startCoords[1] + Math.sin(angle) * radius, 
-            name: `${city} Trail Point ${day + 1}` 
+        const nearby = await findNearbyCity(startCoords[0], startCoords[1], tripType, day);
+        if (nearby) {
+          endPoint = nearby;
+        } else {
+          const dir = (day / Math.max(duration - 1, 1)) * Math.PI;
+          const dist = isCycling ? 0.4 : 0.07;
+          endPoint = {
+            lat: startCoords[0] + Math.cos(dir) * dist,
+            lng: startCoords[1] + Math.sin(dir) * dist,
+            name: `${city} - Day ${day + 1}`
           };
+        }
       }
       
       // Get real road route using OpenRouteService API  

@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
 
     // Use free OSRM API (Open Source Routing Machine) - no API key needed!
     const profile = tripType === 'cycling' ? 'bike' : 'foot';
-    const url = `https://router.project-osrm.org/route/v1/${profile}/${startPoint.lng},${startPoint.lat};${endPoint.lng},${endPoint.lat}?overview=full&geometries=polyline`;
+    const url = `https://router.project-osrm.org/route/v1/${profile}/${startPoint.lng},${startPoint.lat};${endPoint.lng},${endPoint.lat}?overview=full&geometries=geojson`;
     
     console.log(`📡 Server: Calling OSRM API (free): ${profile}`);
     console.log(`📡 Server: URL: ${url}`);
