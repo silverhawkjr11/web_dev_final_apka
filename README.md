@@ -321,11 +321,11 @@ curl -X POST http://localhost:9000/api/auth/register \
 
 ## 👥 Team Information
 
-**Project Team**: [Add Your Name(s) Here]
+**Project Team**: saeed kanawat
 **Course**: Web Platform Development - Final Project 2026
-**GitHub Repository**: [Add Your GitHub Repository URL]
-**Cloud Deployment**: [Add Your Cloud Deployment URL when deployed]
-**Presentation Date**: [Add Your Defense Date]
+**GitHub Repository**: https://github.com/silverhawkjr11/web_dev_final_apka
+**Cloud Deployment**: https://web-dev-final-apka.vercel.app/
+**Presentation Date**: 26.4.2026
 
 ## 🎯 Assignment Compliance
 
