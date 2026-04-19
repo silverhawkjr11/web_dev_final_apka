@@ -114,7 +114,12 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       console.error('❌ Error status:', error.response?.status);
       console.error('❌ Error config:', error.config);
       
-      const message = error.response?.data?.message || 'Registration failed';
+      const data = error.response?.data;
+      const message = (typeof data === 'string' ? data : null)
+        || data?.message
+        || data?.errors?.[0]?.msg
+        || (error.response ? `Server error (${error.response.status})` : 'Cannot reach server')
+        || 'Registration failed';
       toast.error(message);
       throw error;
     }
