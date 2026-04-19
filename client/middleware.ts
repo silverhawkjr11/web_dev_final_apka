@@ -1,37 +1,39 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
 
-// Define protected routes
 const protectedRoutes = ['/planning', '/history', '/profile'];
 const authRoutes = ['/login', '/register'];
 
-export function middleware(request: NextRequest) {
+const isValidToken = async (token: string): Promise<boolean> => {
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production');
+    await jwtVerify(token, secret);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('accessToken')?.value;
-  
-  // Check if the current route is protected
-  const isProtectedRoute = protectedRoutes.some(route => 
-    pathname.startsWith(route)
-  );
-  
-  // Check if the current route is an auth route
-  const isAuthRoute = authRoutes.some(route => 
-    pathname.startsWith(route)
-  );
-  
-  // If it's a protected route and no token exists, redirect to login
-  if (isProtectedRoute && !token) {
+
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
+
+  const authenticated = token ? await isValidToken(token) : false;
+
+  if (isProtectedRoute && !authenticated) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
-  
-  // If token exists and user is trying to access auth routes, redirect to home
-  if (token && isAuthRoute) {
+
+  if (authenticated && isAuthRoute) {
     return NextResponse.redirect(new URL('/', request.url));
   }
-  
-  // Allow access to public routes
+
   return NextResponse.next();
 }
 
