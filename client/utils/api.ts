@@ -17,17 +17,17 @@ export const api = {
       const response = await apiClient.post('/auth/register', userData);
       return response.data;
     },
-    
+
     login: async (credentials: { email: string; password: string }) => {
       const response = await apiClient.post('/auth/login', credentials);
       return response.data;
     },
-    
+
     refreshToken: async (refreshToken: string) => {
       const response = await apiClient.post('/auth/refresh', { refreshToken });
       return response.data;
     },
-    
+
     verifyToken: async () => {
       const response = await apiClient.get('/auth/verify');
       return response.data;
@@ -40,17 +40,17 @@ export const api = {
       const response = await apiClient.post('/routes', routeData);
       return response.data;
     },
-    
+
     getAll: async () => {
       const response = await apiClient.get('/routes');
       return response.data;
     },
-    
+
     getById: async (id: string) => {
       const response = await apiClient.get(`/routes/${id}`);
       return response.data;
     },
-    
+
     approve: async (id: string) => {
       const response = await apiClient.patch(`/routes/${id}/approve`);
       return response.data;
@@ -74,7 +74,7 @@ export const api = {
         }, 2000);
       });
     },
-    
+
     getWeather: async (coordinates: [number, number]) => {
       // This would call OpenWeatherMap API in real implementation
       // For now, return mock data
@@ -87,7 +87,7 @@ export const api = {
         ]
       };
     },
-    
+
     getCountryImage: async (country: string) => {
       // This would call Unsplash API in real implementation
       return `https://images.unsplash.com/search/photos?query=${encodeURIComponent(country + ' landscape')}&w=600&h=400`;
@@ -107,7 +107,7 @@ apiClient.interceptors.response.use(
     } else {
       toast.error('An unexpected error occurred');
     }
-    
+
     return Promise.reject(error);
   }
 );

@@ -6,7 +6,10 @@ const nextConfig = {
     domains: ['images.unsplash.com', 'via.placeholder.com', 'openweathermap.org'],
   },
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000/api';
+    let apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000/api';
+    if (apiUrl && !apiUrl.startsWith('http://') && !apiUrl.startsWith('https://')) {
+      apiUrl = 'https://' + apiUrl;
+    }
     return [
       {
         source: '/api/server/:path*',

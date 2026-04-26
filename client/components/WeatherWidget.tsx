@@ -23,7 +23,7 @@ export default function WeatherWidget({ weatherData }: WeatherWidgetProps) {
           3-Day Weather Forecast
         </h3>
       </div>
-      
+
       <div className="text-sm text-blue-700 mb-4">
         Weather forecast for your route starting tomorrow
       </div>

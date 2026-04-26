@@ -22,12 +22,12 @@ interface RouteHistory {
     dailySegments: Array<{
       day: number;
       distance: number;
-      startPoint: { 
+      startPoint: {
         lat: number;
         lng: number;
         name: string;
       };
-      endPoint: { 
+      endPoint: {
         lat: number;
         lng: number;
         name: string;
@@ -46,7 +46,7 @@ export default function HistoryPage() {
   const [filterType, setFilterType] = useState<'all' | 'cycling' | 'trekking'>('all');
   const [selectedRoute, setSelectedRoute] = useState<RouteHistory | null>(null);
   const [weatherData, setWeatherData] = useState<any>(null);
-  
+
   const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export default function HistoryPage() {
           { day: 'Day 3', temp: `${Math.floor(Math.random() * 10) + 18}°C`, condition: 'Cloudy', icon: '☁️' }
         ]
       };
-      
+
       setWeatherData(mockWeather);
       toast.success('Weather forecast updated for tomorrow!');
     } catch (error: any) {
@@ -106,8 +106,8 @@ export default function HistoryPage() {
         <p className="text-gray-600 mb-6">
           Please sign in to view your route history.
         </p>
-        <Link 
-          href="/login" 
+        <Link
+          href="/login"
           className="btn-primary"
         >
           Sign In
@@ -118,8 +118,8 @@ export default function HistoryPage() {
 
   const filteredRoutes = routes.filter(route => {
     const matchesSearch = route.routeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         route.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         route.city.toLowerCase().includes(searchTerm.toLowerCase());
+      route.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      route.city.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === 'all' || route.tripType === filterType;
     return matchesSearch && matchesFilter;
   });
@@ -149,7 +149,7 @@ export default function HistoryPage() {
               className="input-field pl-10"
             />
           </div>
-          
+
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as 'all' | 'cycling' | 'trekking')}
@@ -215,7 +215,7 @@ export default function HistoryPage() {
                   route={route}
                   onViewDetails={(route) => {
                     setSelectedRoute(route);
-                    const coords = route.routeData?.dailySegments?.[0]?.startPoint 
+                    const coords = route.routeData?.dailySegments?.[0]?.startPoint
                       ? [route.routeData.dailySegments[0].startPoint.lat, route.routeData.dailySegments[0].startPoint.lng]
                       : [0, 0];
                     fetchUpdatedWeather(route._id, coords);
@@ -234,8 +234,8 @@ export default function HistoryPage() {
                   <p className="text-gray-500 mb-6">
                     You haven't created any routes yet. Start planning your first adventure!
                   </p>
-                  <Link 
-                    href="/planning" 
+                  <Link
+                    href="/planning"
                     className="btn-primary"
                   >
                     Create Your First Route
@@ -250,7 +250,7 @@ export default function HistoryPage() {
                   <p className="text-gray-500 mb-4">
                     No routes match your current search criteria.
                   </p>
-                  <button 
+                  <button
                     onClick={() => {
                       setSearchTerm('');
                       setFilterType('all');
@@ -268,7 +268,7 @@ export default function HistoryPage() {
 
       {/* Route Detail Modal */}
       {selectedRoute && (
-        <RouteDetailModal 
+        <RouteDetailModal
           route={selectedRoute}
           weatherData={weatherData}
           onClose={() => {
@@ -282,11 +282,11 @@ export default function HistoryPage() {
 }
 
 // Route Detail Modal Component
-function RouteDetailModal({ 
-  route, 
-  weatherData, 
-  onClose 
-}: { 
+function RouteDetailModal({
+  route,
+  weatherData,
+  onClose
+}: {
   route: RouteHistory;
   weatherData: any;
   onClose: () => void;
@@ -349,7 +349,7 @@ function RouteDetailModal({
                     Updated Weather Forecast
                   </h4>
                 </div>
-                
+
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   {weatherData.forecast.map((day: any, index: number) => (
                     <div key={index} className="text-center bg-white rounded-lg p-3 border border-blue-200">
@@ -368,7 +368,7 @@ function RouteDetailModal({
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="text-sm text-blue-700">
                   <CalendarDaysIcon className="h-4 w-4 inline mr-1" />
                   Forecast for starting tomorrow

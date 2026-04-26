@@ -36,23 +36,23 @@ export default function Navigation() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent hover:border-blue-600 transition duration-200"
             >
               Home
             </Link>
-            
+
             {isAuthenticated ? (
               <>
-                <Link 
-                  href="/planning" 
+                <Link
+                  href="/planning"
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent hover:border-blue-600 transition duration-200"
                 >
                   Route Planning
                 </Link>
-                <Link 
-                  href="/history" 
+                <Link
+                  href="/history"
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium border-b-2 border-transparent hover:border-blue-600 transition duration-200"
                 >
                   Route History
@@ -71,14 +71,14 @@ export default function Navigation() {
               </>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link 
-                  href="/login" 
+                <Link
+                  href="/login"
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
                 >
                   Sign In
                 </Link>
-                <Link 
-                  href="/register" 
+                <Link
+                  href="/register"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200"
                 >
                   Sign Up
@@ -113,7 +113,7 @@ export default function Navigation() {
               >
                 Home
               </Link>
-              
+
               {isAuthenticated ? (
                 <>
                   <Link

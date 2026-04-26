@@ -44,16 +44,16 @@ axios.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401 && !error.config._retry) {
       error.config._retry = true;
-      
+
       const refreshToken = Cookies.get('refreshToken');
       if (refreshToken) {
         try {
           const response = await axios.post('/auth/refresh', { refreshToken });
           const { accessToken, refreshToken: newRefreshToken } = response.data;
-          
+
           Cookies.set('accessToken', accessToken, { expires: 1 });
           Cookies.set('refreshToken', newRefreshToken, { expires: 7 });
-          
+
           error.config.headers.Authorization = `Bearer ${accessToken}`;
           return axios.request(error.config);
         } catch (refreshError) {
@@ -79,11 +79,11 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await axios.post('/auth/login', { email, password });
       const { user: userData, accessToken, refreshToken } = response.data;
-      
+
       setUser(userData);
       Cookies.set('accessToken', accessToken, { expires: 1 });
       Cookies.set('refreshToken', refreshToken, { expires: 7 });
-      
+
       toast.success('Login successful!');
     } catch (error: any) {
       const message = error.response?.data?.message || 'Login failed';
@@ -97,23 +97,23 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       console.log('🔐 Registration attempt:', { username, email });
       console.log('🌐 API Base URL:', API_URL);
       console.log('🌐 Full URL will be:', `${API_URL}/auth/register`);
-      
+
       const response = await axios.post('/auth/register', { username, email, password });
       console.log('✅ Registration response:', response.data);
-      
+
       const { user: userData, accessToken, refreshToken } = response.data;
-      
+
       setUser(userData);
       Cookies.set('accessToken', accessToken, { expires: 1 });
       Cookies.set('refreshToken', refreshToken, { expires: 7 });
-      
+
       toast.success('Registration successful!');
     } catch (error: any) {
       console.error('❌ Registration error:', error);
       console.error('❌ Error response:', error.response?.data);
       console.error('❌ Error status:', error.response?.status);
       console.error('❌ Error config:', error.config);
-      
+
       const data = error.response?.data;
       const message = (typeof data === 'string' ? data : null)
         || data?.message
@@ -138,10 +138,10 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
       const response = await axios.post('/auth/refresh', { refreshToken: refreshTokenValue });
       const { accessToken, refreshToken: newRefreshToken } = response.data;
-      
+
       Cookies.set('accessToken', accessToken, { expires: 1 });
       Cookies.set('refreshToken', newRefreshToken, { expires: 7 });
-      
+
       return true;
     } catch (error) {
       logout();

@@ -48,7 +48,7 @@ export default function RouteDetails({ routeData }: RouteDetailsProps) {
         <h4 className="text-lg font-semibold text-gray-800">
           {routeData.routeName}
         </h4>
-        
+
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <span className="font-medium text-gray-600">Destination:</span>
@@ -119,7 +119,7 @@ export default function RouteDetails({ routeData }: RouteDetailsProps) {
                   {segment.distance} km
                 </div>
               </div>
-              
+
               <div className="text-sm text-gray-600 space-y-1">
                 <div className="flex items-center">
                   <span className="w-12 text-green-600 font-medium">Start:</span>
@@ -130,11 +130,11 @@ export default function RouteDetails({ routeData }: RouteDetailsProps) {
                   <span>{segment.endPoint.name}</span>
                 </div>
               </div>
-              
+
               {/* Estimated time based on trip type */}
               <div className="mt-2 text-xs text-gray-500">
                 Estimated time: {
-                  routeData.tripType === 'cycling' 
+                  routeData.tripType === 'cycling'
                     ? `${Math.round(segment.distance / 15)} - ${Math.round(segment.distance / 20)} hours`
                     : `${Math.round(segment.distance / 3)} - ${Math.round(segment.distance / 4)} hours`
                 } (including breaks)
@@ -202,7 +202,7 @@ export default function RouteDetails({ routeData }: RouteDetailsProps) {
           {(() => {
             const avgDaily = routeData.totalDistance / routeData.duration;
             let difficulty, color;
-            
+
             if (routeData.tripType === 'cycling') {
               if (avgDaily <= 40) { difficulty = 'Easy'; color = 'text-green-600'; }
               else if (avgDaily <= 55) { difficulty = 'Medium'; color = 'text-yellow-600'; }
@@ -212,7 +212,7 @@ export default function RouteDetails({ routeData }: RouteDetailsProps) {
               else if (avgDaily <= 8) { difficulty = 'Medium'; color = 'text-yellow-600'; }
               else { difficulty = 'Hard'; color = 'text-red-600'; }
             }
-            
+
             return (
               <div className={`font-semibold ${color}`}>
                 {difficulty}

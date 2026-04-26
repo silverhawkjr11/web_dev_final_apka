@@ -17,14 +17,14 @@ export default function HomePage() {
             Plan your perfect cycling and trekking adventures with AI-powered route suggestions, real-time weather data, and interactive maps
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              href="/planning" 
+            <Link
+              href="/planning"
               className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition duration-200 text-lg shadow-lg"
             >
               🗺️ Plan New Route
             </Link>
-            <Link 
-              href="/history" 
+            <Link
+              href="/history"
               className="bg-blue-500 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-400 transition duration-200 text-lg border-2 border-white/30"
             >
               📚 View Route History
@@ -106,8 +106,8 @@ export default function HomePage() {
                 <li>• 30-70 km daily distances</li>
                 <li>• Real road and bike path routing</li>
               </ul>
-              <Link 
-                href="/planning?type=cycling" 
+              <Link
+                href="/planning?type=cycling"
                 className="btn-primary inline-block"
               >
                 Plan Cycling Route
@@ -125,8 +125,8 @@ export default function HomePage() {
                 <li>• 5-10 km daily distances</li>
                 <li>• Trail and hiking path routing</li>
               </ul>
-              <Link 
-                href="/planning?type=trekking" 
+              <Link
+                href="/planning?type=trekking"
                 className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 ease-in-out inline-block"
               >
                 Plan Trekking Route
@@ -146,14 +146,14 @@ export default function HomePage() {
             Join thousands of adventurers who trust our platform for their route planning
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              href="/register" 
+            <Link
+              href="/register"
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold transition duration-200 text-lg shadow-lg"
             >
               Create Account
             </Link>
-            <Link 
-              href="/login" 
+            <Link
+              href="/login"
               className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition duration-200 text-lg border-2 border-blue-600"
             >
               Sign In

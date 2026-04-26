@@ -19,20 +19,20 @@ const geocodeCity = async (city: string, country: string): Promise<[number, numb
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1&addressdetails=1`
     );
-    
+
     if (!response.ok) {
       throw new Error(`Geocoding API error: ${response.status}`);
     }
-    
+
     const data = await response.json();
-    
+
     if (data && data.length > 0) {
       const lat = parseFloat(data[0].lat);
       const lng = parseFloat(data[0].lon);
       console.log(`✅ Geocoded ${city}: [${lat}, ${lng}]`);
       return [lat, lng];
     }
-    
+
     console.warn(`⚠️ No coordinates found for ${city}, ${country}`);
     return null;
   } catch (error) {
@@ -129,7 +129,7 @@ export default function PlanningPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [showApproveDialog, setShowApproveDialog] = useState(false);
-  
+
   const { isAuthenticated, user } = useAuth();
   const searchParams = useSearchParams();
   const initialType = searchParams.get('type') as 'cycling' | 'trekking' | null;
@@ -157,19 +157,19 @@ export default function PlanningPage() {
 
   const handleRouteGeneration = async (formData: any) => {
     setIsGenerating(true);
-    
+
     try {
       // Generate route using AI/LLM
       const routeData = await generateRouteWithAI(formData);
       setCurrentRoute(routeData);
-      
+
       // Fetch weather data for the route
-      const firstCoordinate = routeData.coordinates && routeData.coordinates.length > 0 
-        ? routeData.coordinates[0] 
+      const firstCoordinate = routeData.coordinates && routeData.coordinates.length > 0
+        ? routeData.coordinates[0]
         : [routeData.dailySegments[0]?.startPoint.lat || 0, routeData.dailySegments[0]?.startPoint.lng || 0];
       const weather = await fetchWeatherData(firstCoordinate);
       setWeatherData(weather);
-      
+
       toast.success('Route generated successfully!');
       setShowApproveDialog(true);
     } catch (error: any) {
@@ -183,30 +183,30 @@ export default function PlanningPage() {
   const optimizeRouteForStorage = (routeData: RouteData): RouteData => {
     console.log('🎯 Optimizing route data for storage...');
     console.log('🎯 Original total coordinates:', routeData.coordinates.length);
-    
+
     const optimizedSegments = routeData.dailySegments.map((segment, index) => {
       const originalWaypoints = segment.waypoints.length;
-      
+
       // Keep every 5th waypoint for storage (still shows route accurately)
       const sampledWaypoints = segment.waypoints.filter((_, idx) => {
         return idx === 0 || idx === segment.waypoints.length - 1 || idx % 5 === 0;
       });
-      
+
       console.log(`🎯 Day ${index + 1}: ${originalWaypoints} → ${sampledWaypoints.length} waypoints`);
-      
+
       return {
         ...segment,
         waypoints: sampledWaypoints
       };
     });
-    
+
     // Also optimize main coordinates array
     const optimizedCoordinates = routeData.coordinates.filter((_, idx) => {
       return idx === 0 || idx === routeData.coordinates.length - 1 || idx % 5 === 0;
     });
-    
+
     console.log('🎯 Optimized total coordinates:', optimizedCoordinates.length);
-    
+
     return {
       ...routeData,
       coordinates: optimizedCoordinates,
@@ -255,7 +255,7 @@ export default function PlanningPage() {
       console.error('❌ Save route error:', error);
       console.error('❌ Error response:', error.response?.data);
       console.error('❌ Error status:', error.response?.status);
-      
+
       const errorMessage = error.response?.data?.message || error.message || 'Failed to save route';
       toast.error(errorMessage);
     }
@@ -323,10 +323,10 @@ export default function PlanningPage() {
   ): Promise<number[][]> => {
     console.log(`� NEW CODE RUNNING! Getting route from ${startPoint.name} to ${endPoint.name} (${tripType})`);
     console.log(`�🛣️ Getting route from ${startPoint.name} to ${endPoint.name} (${tripType})`);
-    
+
     try {
       console.log(`📡 Calling OSRM (free navigation API)`);
-      
+
       const response = await fetch('/api/route', {
         method: 'POST',
         headers: {
@@ -340,28 +340,28 @@ export default function PlanningPage() {
       });
 
       console.log(`📡 API Response Status: ${response.status}`);
-      
+
       if (response.ok) {
         const result = await response.json();
-        
+
         if (result.success) {
           const data = result.data;
           console.log('✅ Got real route data from OSRM!');
           console.log('📋 API Response structure:', JSON.stringify(data, null, 2).substring(0, 1000) + '...');
-          
+
           if (data.routes && data.routes[0]) {
             console.log('🔍 Route keys:', Object.keys(data.routes[0]));
             console.log('🗺️ Route distance:', data.routes[0].distance, 'meters');
             console.log('🗺️ Route duration:', data.routes[0].duration, 'seconds');
-            
+
             if (data.routes[0].geometry) {
               console.log('🗺️ Found geometry!', data.routes[0].geometry.substring(0, 100) + '...');
             }
           }
-          
+
           // Handle OSRM response structure
           let routeCoordinates = null;
-          
+
           if (data.routes && data.routes[0] && data.routes[0].geometry) {
             // OSRM geojson geometry: coordinates are [lng, lat] — flip to [lat, lng] for Leaflet
             const geojsonCoords: number[][] = data.routes[0].geometry.coordinates;
@@ -370,7 +370,7 @@ export default function PlanningPage() {
             console.log('🗺️ First coord:', routeCoordinates[0]);
             console.log('🗺️ Last coord:', routeCoordinates[routeCoordinates.length - 1]);
           }
-          
+
           if (routeCoordinates && Array.isArray(routeCoordinates) && routeCoordinates.length > 0) {
             console.log(`🗺️ Route has ${routeCoordinates.length} real road points from OSRM`);
             console.log('🗺️ Sample coordinates:', routeCoordinates.slice(0, 3));
@@ -394,31 +394,31 @@ export default function PlanningPage() {
     console.log('⚠️ OSRM failed - using enhanced realistic route algorithm as backup');
     const coordinates = [];
     const steps = tripType === 'cycling' ? 50 : 30; // More points for smoother curves
-    
+
     // Calculate distance and direction for realistic path planning
     const totalDistance = Math.sqrt(
-      Math.pow(endPoint.lat - startPoint.lat, 2) + 
+      Math.pow(endPoint.lat - startPoint.lat, 2) +
       Math.pow(endPoint.lng - startPoint.lng, 2)
     );
-    
+
     // Add intermediate waypoints for more realistic routing
     const waypoints = [startPoint];
-    
+
     // Add 2-4 intermediate cities/towns for longer routes
     if (totalDistance > 0.5) { // For longer routes
       const numWaypoints = Math.min(4, Math.floor(totalDistance / 0.2));
-      
+
       for (let w = 1; w < numWaypoints; w++) {
         const progress = w / numWaypoints;
         const baseProgress = progress + (Math.random() - 0.5) * 0.3; // Add randomness
-        
+
         const intermediateLat = startPoint.lat + (endPoint.lat - startPoint.lat) * baseProgress;
         const intermediateLng = startPoint.lng + (endPoint.lng - startPoint.lng) * baseProgress;
-        
+
         // Offset to simulate road detours around obstacles
         const roadOffset = (Math.random() - 0.5) * 0.1; // Larger offset for realism
         const terrainOffset = (Math.random() - 0.5) * 0.08;
-        
+
         waypoints.push({
           lat: intermediateLat + roadOffset,
           lng: intermediateLng + terrainOffset,
@@ -426,18 +426,18 @@ export default function PlanningPage() {
         });
       }
     }
-    
+
     waypoints.push(endPoint);
-    
+
     // Create smooth curved sections between waypoints
     for (let w = 0; w < waypoints.length - 1; w++) {
       const segmentStart = waypoints[w];
       const segmentEnd = waypoints[w + 1];
       const segmentSteps = Math.floor(steps / (waypoints.length - 1));
-      
+
       for (let i = 0; i < segmentSteps; i++) {
         const progress = i / segmentSteps;
-        
+
         let lat, lng;
         if (tripType === 'cycling') {
           // Cycling: Follow road patterns with gentle curves
@@ -445,7 +445,7 @@ export default function PlanningPage() {
           const roadVariation = Math.sin(progress * Math.PI * 6) * 0.003; // Small variations
           const roadDetour = Math.cos(progress * Math.PI * 1.5) * 0.012; // Detours around obstacles
           const urbanSpread = Math.sin(progress * Math.PI * 4) * 0.005; // City route variations
-          
+
           lat = segmentStart.lat + (segmentEnd.lat - segmentStart.lat) * progress + roadCurve + roadVariation;
           lng = segmentStart.lng + (segmentEnd.lng - segmentStart.lng) * progress + roadDetour + urbanSpread;
         } else {
@@ -454,18 +454,18 @@ export default function PlanningPage() {
           const elevation = Math.cos(progress * Math.PI * 3) * 0.012; // Elevation changes
           const naturalPath = Math.sin(progress * Math.PI * 8) * 0.008; // Natural path variations
           const terrainFollowing = Math.cos(progress * Math.PI * 5) * 0.010; // Following ridges/valleys
-          
+
           lat = segmentStart.lat + (segmentEnd.lat - segmentStart.lat) * progress + trailWind + elevation;
           lng = segmentStart.lng + (segmentEnd.lng - segmentStart.lng) * progress + naturalPath + terrainFollowing;
         }
-        
+
         coordinates.push([lat, lng]);
       }
     }
-    
+
     // Ensure we end exactly at the destination
     coordinates.push([endPoint.lat, endPoint.lng]);
-    
+
     console.log(`🔄 Generated ${coordinates.length} realistic curved route points`);
     console.log(`🎯 First few waypoints:`, coordinates.slice(0, 5));
     console.log(`🎯 Last few waypoints:`, coordinates.slice(-5));
@@ -475,7 +475,7 @@ export default function PlanningPage() {
 
   const generateRouteWithAI = async (formData: any): Promise<RouteData> => {
     const { country, city, tripType, duration } = formData;
-    
+
     // Helper function to get country-specific images
     const getCountryImage = (countryName: string): string => {
       const countryImages: Record<string, string> = {
@@ -492,16 +492,16 @@ export default function PlanningPage() {
         'united kingdom': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600&h=400&fit=crop',
         england: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600&h=400&fit=crop'
       };
-      
+
       const defaultImage = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop'; // Generic landscape
       return countryImages[countryName.toLowerCase()] || defaultImage;
     };
-    
+
     // Try real OpenAI API first, fallback to enhanced mock data
     try {
       if (process.env.NEXT_PUBLIC_OPENAI_API_KEY && process.env.NEXT_PUBLIC_OPENAI_API_KEY !== 'your-openai-api-key') {
         console.log('🤖 Using real OpenAI API for route generation');
-        
+
         const OpenAI = (await import('openai')).default;
         const openai = new OpenAI({
           apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
@@ -534,7 +534,7 @@ Make it realistic with actual cities in ${country}.`;
         });
 
         const aiResponse = JSON.parse(response.choices[0].message.content || '{}');
-        
+
         // Convert AI response to our route format
         const coordinates: number[][] = [];
         const dailySegments: Array<{
@@ -544,39 +544,39 @@ Make it realistic with actual cities in ${country}.`;
           endPoint: { lat: number; lng: number; name: string };
           waypoints: number[][];
         }> = [];
-        
+
         // Get real coordinates for the starting city using geocoding API
         console.log(`🌍 Getting coordinates for ${city}, ${country}...`);
         const startCoords = await geocodeCity(city, country);
-        
+
         if (!startCoords) {
           throw new Error(`Could not find coordinates for ${city}, ${country}`);
         }
-        
+
         console.log(`📍 Starting coordinates: [${startCoords[0]}, ${startCoords[1]}]`);
-        
+
         for (let day = 0; day < duration; day++) {
           const cityName = aiResponse.cities?.[day] || `Day ${day + 1} Destination`;
           const distance = aiResponse.dailyDistances?.[day] || (tripType === 'cycling' ? 45 : 8);
-          
-          const startPoint = day === 0 ? 
+
+          const startPoint = day === 0 ?
             { lat: startCoords[0], lng: startCoords[1], name: `${city} Center` } :
             dailySegments[day - 1].endPoint;
-          
+
           // Geocode the AI-suggested city name for a real endpoint
           const cityCoords = await geocodeCity(cityName, country);
           const endPoint = cityCoords
             ? { lat: cityCoords[0], lng: cityCoords[1], name: cityName }
             : (await findNearbyCity(startCoords[0], startCoords[1], tripType, day)) ||
-              { lat: startCoords[0] + 0.3, lng: startCoords[1], name: cityName };
-          
+            { lat: startCoords[0] + 0.3, lng: startCoords[1], name: cityName };
+
           // Get real road route using OpenRouteService API
           const aiDayCoordinates = await getRealRouteCoordinates(
-            startPoint, 
-            endPoint, 
+            startPoint,
+            endPoint,
             tripType
           );
-          
+
           dailySegments.push({
             day: day + 1,
             distance,
@@ -584,11 +584,11 @@ Make it realistic with actual cities in ${country}.`;
             endPoint,
             waypoints: aiDayCoordinates
           });
-          
+
           console.log(`🗺️ Day ${day + 1} waypoints (${aiDayCoordinates.length} points):`, aiDayCoordinates.slice(0, 3), '...', aiDayCoordinates.slice(-2));
           coordinates.push(...aiDayCoordinates);
         }
-        
+
         return {
           routeName: `🤖 AI-Generated ${country} ${duration}-Day ${tripType} Adventure`,
           country,
@@ -605,20 +605,20 @@ Make it realistic with actual cities in ${country}.`;
     } catch (error) {
       console.warn('🔄 OpenAI API failed, using enhanced fallback:', error);
     }
-    
+
     // Enhanced fallback with realistic data using geocoding
     console.log('📍 Using enhanced mock data with geocoding API');
-    
+
     // Get real coordinates for the starting city using geocoding API
     console.log(`🌍 Getting fallback coordinates for ${city}, ${country}...`);
     const startCoords = await geocodeCity(city, country);
-    
+
     if (!startCoords) {
       // Ultimate fallback to a default location if geocoding fails
       console.warn(`⚠️ Geocoding failed for ${city}, ${country}. Using default coordinates.`);
       const defaultCoords: [number, number] = [46.2044, 6.1432]; // Geneva, Switzerland (central Europe)
       console.log(`📍 Using default coordinates: [${defaultCoords[0]}, ${defaultCoords[1]}]`);
-      
+
       return {
         routeName: `🗺️ ${country} ${duration}-Day ${tripType} Adventure`,
         country,
@@ -638,14 +638,14 @@ Make it realistic with actual cities in ${country}.`;
         countryImage: getCountryImage(country)
       };
     }
-    
+
     console.log(`📍 Fallback coordinates for ${city}: [${startCoords[0]}, ${startCoords[1]}]`);
-    
+
     const isCycling = tripType === 'cycling';
-    const dailyDistance = isCycling ? 
-      Math.floor(Math.random() * 40) + 30 : 
+    const dailyDistance = isCycling ?
+      Math.floor(Math.random() * 40) + 30 :
       Math.floor(Math.random() * 5) + 5;
-    
+
     const coordinates: number[][] = [];
     const dailySegments: Array<{
       day: number;
@@ -654,12 +654,12 @@ Make it realistic with actual cities in ${country}.`;
       endPoint: { lat: number; lng: number; name: string };
       waypoints: number[][];
     }> = [];
-    
+
     for (let day = 0; day < duration; day++) {
-      const startPoint = day === 0 ? 
+      const startPoint = day === 0 ?
         { lat: startCoords[0], lng: startCoords[1], name: `${city} Center` } :
         dailySegments[day - 1].endPoint;
-      
+
       console.log(`🗓️ Day ${day + 1} start point:`, startPoint);
 
       // For trekking last day: return to start
@@ -682,18 +682,18 @@ Make it realistic with actual cities in ${country}.`;
           };
         }
       }
-      
+
       // Get real road route using OpenRouteService API  
       const dayCoordinates = await getRealRouteCoordinates(
         startPoint,
-        endPoint, 
+        endPoint,
         tripType
       );
-      
+
       coordinates.push(...dayCoordinates);
-      
+
       console.log(`🗺️ Fallback Day ${day + 1} waypoints (${dayCoordinates.length} points):`, dayCoordinates.slice(0, 3), '...', dayCoordinates.slice(-2));
-      
+
       dailySegments.push({
         day: day + 1,
         distance: dailyDistance,
@@ -702,7 +702,7 @@ Make it realistic with actual cities in ${country}.`;
         waypoints: dayCoordinates
       });
     }
-    
+
     return {
       routeName: `${tripType === 'cycling' ? '🚴‍♂️' : '🥾'} ${country} ${duration}-Day Adventure`,
       country,
@@ -713,9 +713,9 @@ Make it realistic with actual cities in ${country}.`;
       dailySegments,
       totalDistance: dailyDistance * duration,
       description: `A ${duration}-day ${tripType} adventure through ${country}, starting from ${city}. ${[
-        isCycling ? 
-        `This route takes you through scenic roads and bike paths, connecting beautiful French cities like ${dailySegments.map(s => s.endPoint.name).join(', ')}.` :
-        'This circular trekking route offers beautiful trails through the countryside and returns you to your starting point.',
+        isCycling ?
+          `This route takes you through scenic roads and bike paths, connecting beautiful French cities like ${dailySegments.map(s => s.endPoint.name).join(', ')}.` :
+          'This circular trekking route offers beautiful trails through the countryside and returns you to your starting point.',
         `Experience the culture, cuisine, and landscapes that make ${country} a world-renowned destination.`,
         `Perfect for ${isCycling ? 'road bikes and hybrid bikes' : 'hikers of all skill levels'}.`
       ].join(' ')}`,
@@ -728,30 +728,30 @@ Make it realistic with actual cities in ${country}.`;
     try {
       if (process.env.NEXT_PUBLIC_WEATHER_API_KEY && process.env.NEXT_PUBLIC_WEATHER_API_KEY !== 'your-openweathermap-api-key') {
         console.log('🌤️ Using real OpenWeatherMap API for weather data');
-        
+
         const apiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
         const lat = coordinates[0];
         const lon = coordinates[1];
-        
+
         // Get current weather and 5-day forecast
         const response = await fetch(
           `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&cnt=24`
         );
-        
+
         if (!response.ok) {
           throw new Error(`Weather API error: ${response.status}`);
         }
-        
+
         const weatherData = await response.json();
-        
+
         // Process forecast data - get one forecast per day for next 3 days
         const processedForecast = [];
         const now = new Date();
-        
+
         for (let i = 1; i <= 3; i++) {
           const targetDate = new Date(now);
           targetDate.setDate(now.getDate() + i);
-          
+
           // Find forecast closest to noon for each day
           const dayForecast = weatherData.list.find((item: any) => {
             const forecastDate = new Date(item.dt * 1000);
@@ -761,7 +761,7 @@ Make it realistic with actual cities in ${country}.`;
               forecastDate.getHours() >= 12 && forecastDate.getHours() <= 15
             );
           }) || weatherData.list[i * 8 - 1]; // Fallback to approximate time
-          
+
           if (dayForecast) {
             // Map OpenWeatherMap icons to emojis
             const getWeatherEmoji = (iconCode: string) => {
@@ -774,7 +774,7 @@ Make it realistic with actual cities in ${country}.`;
               };
               return iconMap[iconCode] || '🌤️';
             };
-            
+
             processedForecast.push({
               day: i === 1 ? 'Tomorrow' : `Day ${i}`,
               temp: `${Math.round(dayForecast.main.temp)}°C`,
@@ -789,7 +789,7 @@ Make it realistic with actual cities in ${country}.`;
             });
           }
         }
-        
+
         return {
           location: `${currentRoute?.city || 'Route'} Area`,
           forecast: processedForecast.length > 0 ? processedForecast : [
@@ -798,24 +798,24 @@ Make it realistic with actual cities in ${country}.`;
             { day: 'Day 3', temp: '20°C', condition: 'Cloudy', icon: '☁️' }
           ]
         };
-        
+
       }
     } catch (error) {
       console.warn('🔄 Weather API failed, using enhanced fallback:', error);
     }
-    
+
     // Enhanced fallback weather data
     console.log('🌤️ Using enhanced mock weather data');
     const conditions = ['Sunny', 'Partly Cloudy', 'Cloudy', 'Light Rain', 'Clear'];
     const icons = ['☀️', '⛅', '☁️', '🌧️', '🌤️'];
-    
+
     return {
       location: `${currentRoute?.city || 'Route'} Area`,
       forecast: Array.from({ length: 3 }, (_, i) => {
         const condition = conditions[Math.floor(Math.random() * conditions.length)];
         const temp = Math.floor(Math.random() * 10) + 18; // 18-28°C
         const icon = icons[conditions.indexOf(condition)];
-        
+
         return {
           day: i === 0 ? 'Tomorrow' : `Day ${i + 1}`,
           temp: `${temp}°C`,
@@ -841,12 +841,12 @@ Make it realistic with actual cities in ${country}.`;
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Route Form */}
         <div className="space-y-6">
-          <RouteForm 
+          <RouteForm
             onSubmit={handleRouteGeneration}
             isLoading={isGenerating}
             initialType={initialType}
           />
-          
+
           {currentRoute && weatherData && (
             <WeatherWidget weatherData={weatherData} />
           )}
@@ -863,10 +863,10 @@ Make it realistic with actual cities in ${country}.`;
               {currentRoute.dailySegments.forEach((seg, idx) => {
                 console.log(`📊 Day ${seg.day}: ${seg.waypoints.length} waypoints`, seg.waypoints.slice(0, 2), '...', seg.waypoints.slice(-1));
               })}
-              
+
               <RouteMap routeData={currentRoute} />
               <RouteDetails routeData={currentRoute} />
-              
+
               {/* Approval Section */}
               {showApproveDialog && (
                 <div className="card bg-green-50 border-green-200">

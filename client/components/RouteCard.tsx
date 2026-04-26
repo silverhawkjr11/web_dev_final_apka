@@ -19,12 +19,12 @@ interface RouteHistory {
     dailySegments: Array<{
       day: number;
       distance: number;
-      startPoint: { 
+      startPoint: {
         lat: number;
         lng: number;
         name: string;
       };
-      endPoint: { 
+      endPoint: {
         lat: number;
         lng: number;
         name: string;
@@ -43,10 +43,10 @@ interface RouteCardProps {
 
 export default function RouteCard({ route, onViewDetails }: RouteCardProps) {
   const avgDailyDistance = Math.round(route.routeData.totalDistance / route.duration);
-  
+
   const getDifficultyInfo = () => {
     let difficulty, color;
-    
+
     if (route.tripType === 'cycling') {
       if (avgDailyDistance <= 40) {
         difficulty = 'Easy';
@@ -70,7 +70,7 @@ export default function RouteCard({ route, onViewDetails }: RouteCardProps) {
         color = 'bg-red-100 text-red-800';
       }
     }
-    
+
     return { difficulty, color };
   };
 
@@ -136,7 +136,7 @@ export default function RouteCard({ route, onViewDetails }: RouteCardProps) {
           <div className="text-xs font-medium text-gray-700">Daily segments:</div>
           <div className="flex flex-wrap gap-1">
             {route.routeData.dailySegments.slice(0, 3).map((segment) => (
-              <span 
+              <span
                 key={segment.day}
                 className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-700"
               >

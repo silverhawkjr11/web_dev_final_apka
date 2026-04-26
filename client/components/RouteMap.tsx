@@ -51,7 +51,7 @@ export default function RouteMap({ routeData }: RouteMapProps) {
     if (typeof window !== 'undefined') {
       import('leaflet').then((leaflet) => {
         setL(leaflet.default);
-        
+
         // Fix for default markers in Leaflet with Next.js
         delete (leaflet.default.Icon.Default.prototype as any)._getIconUrl;
         leaflet.default.Icon.Default.mergeOptions({
@@ -74,16 +74,16 @@ export default function RouteMap({ routeData }: RouteMapProps) {
   // Calculate map bounds from route segments (better than routeData.coordinates)
   const getAllRoutePoints = () => {
     const allPoints: [number, number][] = [];
-    
+
     console.log('🗺️ RouteMap: Calculating bounds from route data');
     console.log('🗺️ RouteMap: Daily segments:', routeData.dailySegments.length);
-    
+
     // Collect all waypoints from all daily segments
     routeData.dailySegments.forEach((segment, index) => {
       console.log(`🗺️ RouteMap: Day ${index + 1} - Start: [${segment.startPoint.lat}, ${segment.startPoint.lng}]`);
       console.log(`🗺️ RouteMap: Day ${index + 1} - End: [${segment.endPoint.lat}, ${segment.endPoint.lng}]`);
       console.log(`🗺️ RouteMap: Day ${index + 1} - Waypoints: ${segment.waypoints?.length || 0}`);
-      
+
       if (segment.waypoints && Array.isArray(segment.waypoints)) {
         segment.waypoints.forEach(point => {
           if (Array.isArray(point) && point.length >= 2) {
@@ -92,30 +92,30 @@ export default function RouteMap({ routeData }: RouteMapProps) {
         });
         if (segment.waypoints.length > 0) {
           console.log(`🗺️ RouteMap: Day ${index + 1} - First waypoint: [${segment.waypoints[0][0]}, ${segment.waypoints[0][1]}]`);
-          console.log(`🗺️ RouteMap: Day ${index + 1} - Last waypoint: [${segment.waypoints[segment.waypoints.length-1][0]}, ${segment.waypoints[segment.waypoints.length-1][1]}]`);
+          console.log(`🗺️ RouteMap: Day ${index + 1} - Last waypoint: [${segment.waypoints[segment.waypoints.length - 1][0]}, ${segment.waypoints[segment.waypoints.length - 1][1]}]`);
         }
       }
       // Also add start and end points
       allPoints.push([segment.startPoint.lat, segment.startPoint.lng]);
       allPoints.push([segment.endPoint.lat, segment.endPoint.lng]);
     });
-    
+
     console.log(`🗺️ RouteMap: Total collected points: ${allPoints.length}`);
     if (allPoints.length > 0) {
       console.log('🗺️ RouteMap: First point:', allPoints[0]);
       console.log('🗺️ RouteMap: Last point:', allPoints[allPoints.length - 1]);
     }
-    
+
     return allPoints;
   };
-  
+
   const allRoutePoints = getAllRoutePoints();
   const bounds = allRoutePoints.length > 0 ? L.latLngBounds(allRoutePoints) : null;
-  const center = bounds ? bounds.getCenter() : 
-    routeData.dailySegments.length > 0 
+  const center = bounds ? bounds.getCenter() :
+    routeData.dailySegments.length > 0
       ? [routeData.dailySegments[0].startPoint.lat, routeData.dailySegments[0].startPoint.lng]
       : [41.9028, 12.4964]; // Rome as default instead of Madrid
-  
+
   console.log('🗺️ RouteMap: Final map center:', center);
   console.log('🗺️ RouteMap: Has bounds:', !!bounds);
 
@@ -159,24 +159,24 @@ export default function RouteMap({ routeData }: RouteMapProps) {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          
+
           {/* Render daily segments */}
           {routeData.dailySegments.map((segment, index) => {
             const color = dayColors[index % dayColors.length];
-            
+
             return (
               <React.Fragment key={segment.day}>
                 {/* Polyline for the day's route */}
-                <Polyline 
+                <Polyline
                   positions={segment.waypoints as [number, number][]}
                   color={color}
                   weight={4}
                   opacity={0.8}
                   dashArray={routeData.tripType === 'trekking' ? '10, 5' : undefined}
                 />
-                
+
                 {/* Start point marker */}
-                <Marker 
+                <Marker
                   position={[segment.startPoint.lat, segment.startPoint.lng]}
                   icon={index === 0 ? startIcon : waypointIcon}
                 >
@@ -192,10 +192,10 @@ export default function RouteMap({ routeData }: RouteMapProps) {
                     </div>
                   </Popup>
                 </Marker>
-                
+
                 {/* End point marker (for last segment or different cities) */}
                 {(index === routeData.dailySegments.length - 1 || routeData.tripType === 'cycling') && (
-                  <Marker 
+                  <Marker
                     position={[segment.endPoint.lat, segment.endPoint.lng]}
                     icon={index === routeData.dailySegments.length - 1 ? endIcon : waypointIcon}
                   >
@@ -224,7 +224,7 @@ export default function RouteMap({ routeData }: RouteMapProps) {
           <h4 className="font-semibold text-gray-700">Route Legend</h4>
           {routeData.dailySegments.map((segment, index) => (
             <div key={segment.day} className="flex items-center space-x-2">
-              <div 
+              <div
                 className="w-4 h-1 rounded"
                 style={{ backgroundColor: dayColors[index % dayColors.length] }}
               ></div>
@@ -234,7 +234,7 @@ export default function RouteMap({ routeData }: RouteMapProps) {
             </div>
           ))}
         </div>
-        
+
         <div className="space-y-2">
           <h4 className="font-semibold text-gray-700">Markers</h4>
           <div className="space-y-1 text-gray-600">

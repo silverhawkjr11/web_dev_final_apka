@@ -23,7 +23,7 @@ export default function RouteForm({ onSubmit, isLoading, initialType }: RouteFor
       duration: 2
     }
   });
-  
+
   const tripType = watch('tripType');
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export default function RouteForm({ onSubmit, isLoading, initialType }: RouteFor
       <h2 className="text-2xl font-bold text-gray-800 mb-6">
         Plan Your Route
       </h2>
-      
+
       <form onSubmit={handleSubmit(handleFormSubmit)} className="route-form">
         {/* Country/City Selection */}
         <div>
@@ -60,7 +60,7 @@ export default function RouteForm({ onSubmit, isLoading, initialType }: RouteFor
             Country/Region
           </label>
           <input
-            {...register('country', { 
+            {...register('country', {
               required: 'Country is required',
               minLength: { value: 2, message: 'Country name too short' }
             })}
@@ -78,7 +78,7 @@ export default function RouteForm({ onSubmit, isLoading, initialType }: RouteFor
             Starting City
           </label>
           <input
-            {...register('city', { 
+            {...register('city', {
               required: 'City is required',
               minLength: { value: 2, message: 'City name too short' }
             })}
@@ -97,9 +97,8 @@ export default function RouteForm({ onSubmit, isLoading, initialType }: RouteFor
             Trip Type
           </label>
           <div className="grid grid-cols-2 gap-4">
-            <label className={`cursor-pointer border-2 rounded-lg p-4 transition duration-200 ${
-              tripType === 'cycling' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-            }`}>
+            <label className={`cursor-pointer border-2 rounded-lg p-4 transition duration-200 ${tripType === 'cycling' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+              }`}>
               <input
                 {...register('tripType')}
                 type="radio"
@@ -112,10 +111,9 @@ export default function RouteForm({ onSubmit, isLoading, initialType }: RouteFor
                 <div className="text-sm text-gray-500">30-70 km/day</div>
               </div>
             </label>
-            
-            <label className={`cursor-pointer border-2 rounded-lg p-4 transition duration-200 ${
-              tripType === 'trekking' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
-            }`}>
+
+            <label className={`cursor-pointer border-2 rounded-lg p-4 transition duration-200 ${tripType === 'trekking' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+              }`}>
               <input
                 {...register('tripType')}
                 type="radio"
@@ -137,7 +135,7 @@ export default function RouteForm({ onSubmit, isLoading, initialType }: RouteFor
             Duration (days)
           </label>
           <select
-            {...register('duration', { 
+            {...register('duration', {
               required: 'Duration is required',
               min: { value: constraints.min, message: `Minimum ${constraints.min} days` },
               max: { value: constraints.max, message: `Maximum ${constraints.max} days` }
@@ -186,11 +184,10 @@ export default function RouteForm({ onSubmit, isLoading, initialType }: RouteFor
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full py-3 px-4 rounded-lg font-semibold transition duration-200 ${
-            isLoading 
-              ? 'bg-gray-400 cursor-not-allowed text-white' 
+          className={`w-full py-3 px-4 rounded-lg font-semibold transition duration-200 ${isLoading
+              ? 'bg-gray-400 cursor-not-allowed text-white'
               : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg'
-          }`}
+            }`}
         >
           {isLoading ? (
             <div className="flex items-center justify-center">
@@ -204,7 +201,7 @@ export default function RouteForm({ onSubmit, isLoading, initialType }: RouteFor
           )}
         </button>
       </form>
-      
+
       {/* AI Info */}
       <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
         <div className="flex items-center mb-2">
